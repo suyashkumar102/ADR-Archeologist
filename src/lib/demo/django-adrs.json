@@ -1,0 +1,107 @@
+{
+  "repoUrl": "https://github.com/django/django",
+  "repoName": "django-django",
+  "generatedAt": "2026-05-15T10:00:00.000Z",
+  "adrs": [
+    {
+      "id": "ADR-001",
+      "title": "Use Django ORM as the primary database abstraction layer",
+      "status": "accepted",
+      "category": "database",
+      "confidence": 0.97,
+      "context": "The Django framework needed a database abstraction layer that would allow developers to interact with relational databases without writing raw SQL. The team required a solution that could support multiple database backends while providing a Pythonic API that matched the framework's philosophy of making common tasks easy.",
+      "decision": "Django adopted an Object-Relational Mapper (ORM) as the primary interface between Python application code and the underlying relational database, with raw SQL access available as an escape hatch.",
+      "consequences": "The ORM enables rapid development and database portability across PostgreSQL, MySQL, SQLite, and Oracle. It introduces a performance overhead for complex queries and requires developers to understand both the ORM API and the underlying SQL it generates. The abstraction occasionally produces suboptimal queries that require manual optimization.",
+      "alternativesConsidered": [
+        "Raw SQL with a thin connection wrapper",
+        "SQLAlchemy as the ORM layer",
+        "A document-oriented storage model"
+      ],
+      "evidenceFiles": [
+        {
+          "path": "django/db/models/base.py",
+          "githubUrl": "https://github.com/django/django/blob/main/django/db/models/base.py"
+        },
+        {
+          "path": "django/db/models/query.py",
+          "githubUrl": "https://github.com/django/django/blob/main/django/db/models/query.py"
+        }
+      ],
+      "archaeologyEvidence": [
+        {
+          "type": "migration",
+          "description": "Early migration files show schema evolution patterns that indicate the ORM was designed to manage schema state from the beginning, suggesting raw SQL management was explicitly rejected.",
+          "filePath": "django/db/migrations/executor.py"
+        }
+      ],
+      "decisionDate": "2005-07-13"
+    },
+    {
+      "id": "ADR-002",
+      "title": "Implement a pluggable authentication backend system",
+      "status": "accepted",
+      "category": "auth",
+      "confidence": 0.93,
+      "context": "Django needed an authentication system flexible enough to support diverse deployment scenarios — from simple username/password authentication to LDAP, OAuth, and custom enterprise identity providers. A hardcoded authentication implementation would have prevented adoption in enterprise environments.",
+      "decision": "Django implemented a pluggable authentication backend system where authentication logic is delegated to a list of backend classes, each implementing a standard interface. The default backend authenticates against the built-in User model, but any number of custom backends can be added.",
+      "consequences": "The pluggable system enables Django to be used in virtually any authentication context without modifying core code. It introduces complexity in understanding the authentication flow and requires careful ordering of backends in the AUTHENTICATION_BACKENDS setting. The system supports both authentication and authorization through the same backend interface.",
+      "alternativesConsidered": [
+        "Hardcoded username/password authentication against the User model",
+        "A single configurable authentication adapter",
+        "Delegating authentication entirely to middleware"
+      ],
+      "evidenceFiles": [
+        {
+          "path": "django/contrib/auth/backends.py",
+          "githubUrl": "https://github.com/django/django/blob/main/django/contrib/auth/backends.py"
+        },
+        {
+          "path": "django/contrib/auth/__init__.py",
+          "githubUrl": "https://github.com/django/django/blob/main/django/contrib/auth/__init__.py"
+        }
+      ],
+      "archaeologyEvidence": [],
+      "decisionDate": "2006-05-02"
+    },
+    {
+      "id": "ADR-003",
+      "title": "Use a URL dispatcher with regex/path-based routing",
+      "status": "accepted",
+      "category": "patterns",
+      "confidence": 0.95,
+      "context": "Django needed a URL routing mechanism that was explicit, readable, and decoupled from the view logic. The framework's philosophy of explicit over implicit required that URL patterns be defined in a central location rather than inferred from file structure or decorators.",
+      "decision": "Django adopted a centralized URL dispatcher where URL patterns are defined as a list of path() or re_path() entries in urls.py files, mapping URL patterns to view functions or class-based views.",
+      "consequences": "Centralized URL configuration makes the full URL structure of an application visible in one place, simplifying debugging and documentation. It requires maintaining a separate urls.py file and can become unwieldy in large applications without careful use of include(). The explicit mapping prevents magic routing behavior.",
+      "alternativesConsidered": [
+        "File-system-based routing (URL derived from file path)",
+        "Decorator-based routing on view functions",
+        "Convention-based routing from controller/action naming"
+      ],
+      "evidenceFiles": [
+        {
+          "path": "django/urls/resolvers.py",
+          "githubUrl": "https://github.com/django/django/blob/main/django/urls/resolvers.py"
+        },
+        {
+          "path": "django/urls/conf.py",
+          "githubUrl": "https://github.com/django/django/blob/main/django/urls/conf.py"
+        }
+      ],
+      "archaeologyEvidence": [
+        {
+          "type": "naming-pattern",
+          "description": "The presence of both path() and re_path() functions suggests a migration from pure regex-based routing to the simpler path() syntax, indicating the original regex-only approach was partially superseded.",
+          "filePath": "django/urls/conf.py"
+        }
+      ],
+      "decisionDate": "2005-07-13"
+    }
+  ],
+  "pipelineStats": {
+    "stage1DurationMs": 12400,
+    "stage2DurationMs": 18700,
+    "stage3DurationMs": 9200,
+    "stage4DurationMs": 14100,
+    "totalTokensUsed": 48320
+  }
+}
