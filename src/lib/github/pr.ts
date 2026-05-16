@@ -15,14 +15,14 @@ These ADRs were not written by hand — they were inferred from code patterns, d
 
 ### Decisions recovered
 
-${pkg.adrs.map((a) => `- **${a.id}**: ${a.title} (\`${a.status}\`, confidence: ${Math.round(a.confidence * 100)}%)`).join("\n")}
+${pkg.adrs.map((a) => `- **${a.id}**: ${a.title} (\`${a.status}\`, confidence: ${a.confidence}%)`).join("\n")}
 
 ### How to review
 
 Each ADR in \`/docs/adr/\` follows the [MADR format](https://adr.github.io/madr/). Review the context, decision, and consequences sections. If the inferred rationale is incorrect, update the ADR directly — it is now a living document.
 
 ---
-*Generated at ${pkg.generatedAt} · Pipeline: ${pkg.pipelineStats.stage1DurationMs + pkg.pipelineStats.stage2DurationMs + pkg.pipelineStats.stage3DurationMs + pkg.pipelineStats.stage4DurationMs}ms total*`
+*Total decisions: ${pkg.totalDecisions} · Archaeology findings: ${pkg.archaeologyCount} · Pipeline time: ${pkg.totalTimeMs}ms*`
 }
 
 export async function createPR(pkg: ADRPackage, token: string): Promise<string> {

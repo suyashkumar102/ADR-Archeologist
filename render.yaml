@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: adr-archaeologist-api
+    env: node
+    buildCommand: npm install
+    startCommand: npx tsx server.ts
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: NODE_ENV
+        value: production
+
+# Made with Bob

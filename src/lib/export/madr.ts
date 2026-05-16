@@ -3,7 +3,7 @@ import type { ADR, ADRPackage } from "@/types"
 // ─── Filename formatter ──────────────────────────────────────────────────────
 
 export function toFilename(adr: ADR): string {
-  const num = adr.id.replace("ADR-", "").padStart(4, "0")
+  const num = adr.id.replace(/^ADR-/i, "").padStart(4, "0")
   const slug = adr.title
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")
@@ -18,16 +18,14 @@ export function toFilename(adr: ADR): string {
 
 export function toMADR(adr: ADR): string {
   const statusCapitalized = adr.status.charAt(0).toUpperCase() + adr.status.slice(1)
-  const date = adr.decisionDate ?? new Date().toISOString().split("T")[0]
-  const confidencePct = Math.round(adr.confidence * 100)
 
   const lines: string[] = [
     `# ${adr.id}: ${adr.title}`,
     "",
-    `Date: ${date}`,
+    `Date: ${adr.inferredDate}`,
     `Status: ${statusCapitalized}`,
     `Category: ${adr.category}`,
-    `Confidence: ${confidencePct}%`,
+    `Confidence: ${adr.confidence}%`,
     "",
     "## Context",
     "",
@@ -39,57 +37,53 @@ export function toMADR(adr: ADR): string {
     "",
     "## Consequences",
     "",
-    adr.consequences,
-    "",
   ]
 
-  if (adr.alternativesConsidered.length > 0) {
+  if (adr.consequences.positive.length > 0) {
+    lines.push("### Positive", "")
+    for (const item of adr.consequences.positive) {
+      lines.push(`- ${item}`)
+    }
+    lines.push("")
+  }
+
+  if (adr.consequences.negative.length > 0) {
+    lines.push("### Negative", "")
+    for (const item of adr.consequences.negative) {
+      lines.push(`- ${item}`)
+    }
+    lines.push("")
+  }
+
+  if (adr.alternatives.length > 0) {
     lines.push("## Alternatives Considered", "")
-    for (const alt of adr.alternativesConsidered) {
-      lines.push(`- ${alt}`)
+    for (const alt of adr.alternatives) {
+      lines.push(`- **${alt.option}**: ${alt.reason}`)
     }
     lines.push("")
   }
 
-  if (adr.evidenceFiles.length > 0) {
-    lines.push("## Evidence", "")
-    for (const f of adr.evidenceFiles) {
-      lines.push(`- [\`${f.path}\`](${f.githubUrl})`)
-      if (f.snippet) {
-        lines.push("  ```")
-        lines.push(`  ${f.snippet}`)
-        lines.push("  ```")
-      }
-    }
-    lines.push("")
-  }
-
-  if (adr.archaeologyEvidence.length > 0) {
+  if (adr.archaeology && adr.archaeology.length > 0) {
     lines.push("## Archaeology", "")
     lines.push(
       "> The following evidence suggests alternatives were considered before this decision was made.",
       ""
     )
-    for (const finding of adr.archaeologyEvidence) {
-      const icon = {
-        "deleted-file": "🗑",
-        "commented-code": "💬",
-        migration: "🔄",
-        "naming-pattern": "🏷",
-        "todo-comment": "📝",
-      }[finding.type] ?? "🔍"
-
-      lines.push(`**${icon} ${finding.type}**: ${finding.description}`)
-      if (finding.filePath) {
-        lines.push(`> File: \`${finding.filePath}\``)
-      }
-      if (finding.snippet) {
-        lines.push("```")
-        lines.push(finding.snippet)
-        lines.push("```")
-      }
-      lines.push("")
+    for (const finding of adr.archaeology) {
+      lines.push(
+        `- **${finding.option}** — rejected: ${finding.rejectionReason}`,
+        `  > Evidence (\`${finding.evidenceType}\`): \`${finding.evidenceFile}\``
+      )
     }
+    lines.push("")
+  }
+
+  if (adr.evidenceFiles.length > 0) {
+    lines.push("## Evidence trail", "")
+    for (const f of adr.evidenceFiles) {
+      lines.push(`- \`${f}\``)
+    }
+    lines.push("")
   }
 
   return lines.join("\n")
@@ -98,10 +92,12 @@ export function toMADR(adr: ADR): string {
 // ─── README index ────────────────────────────────────────────────────────────
 
 export function buildIndex(pkg: ADRPackage): string {
+  const generatedAt = new Date().toISOString().split("T")[0]
+
   const lines: string[] = [
     "# Architecture Decision Records",
     "",
-    `> Reconstructed from [\`${pkg.repoName}\`](${pkg.repoUrl}) by [ADR Archaeologist](https://github.com/adr-archaeologist) on ${pkg.generatedAt.split("T")[0]}.`,
+    `> Reconstructed from [\`${pkg.repoName}\`](${pkg.repoUrl}) by ADR Archaeologist on ${generatedAt}.`,
     "",
     "These ADRs were not written by hand — they were inferred from code patterns, dependencies, commit history, and structure.",
     "",
@@ -113,20 +109,19 @@ export function buildIndex(pkg: ADRPackage): string {
 
   for (const adr of pkg.adrs) {
     const statusEmoji = { accepted: "✅", deprecated: "❌", superseded: "🔄" }[adr.status] ?? ""
-    const confidencePct = Math.round(adr.confidence * 100)
     lines.push(
-      `| [${adr.id}](./${toFilename(adr)}) | ${adr.title} | ${statusEmoji} ${adr.status} | ${adr.category} | ${confidencePct}% |`
+      `| [${adr.id}](./${toFilename(adr)}) | ${adr.title} | ${statusEmoji} ${adr.status} | ${adr.category} | ${adr.confidence}% |`
     )
   }
 
-  lines.push("")
-  lines.push("## Pipeline Stats")
-  lines.push("")
-  lines.push(`- Stage 1 (Discovery): ${pkg.pipelineStats.stage1DurationMs}ms`)
-  lines.push(`- Stage 2 (Enrichment): ${pkg.pipelineStats.stage2DurationMs}ms`)
-  lines.push(`- Stage 3 (Archaeology): ${pkg.pipelineStats.stage3DurationMs}ms`)
-  lines.push(`- Stage 4 (Formatting): ${pkg.pipelineStats.stage4DurationMs}ms`)
-  lines.push(`- Total tokens used: ${pkg.pipelineStats.totalTokensUsed.toLocaleString()}`)
+  lines.push(
+    "",
+    "## Pipeline Stats",
+    "",
+    `- Total decisions: ${pkg.totalDecisions}`,
+    `- Archaeology findings: ${pkg.archaeologyCount}`,
+    `- Total time: ${pkg.totalTimeMs}ms`
+  )
 
   return lines.join("\n")
 }

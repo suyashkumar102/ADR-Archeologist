@@ -1,124 +1,112 @@
 // ─── Single source of truth for all shared types ───────────────────────────
-// Both frontend and backend import from here. Never duplicate these types.
+// The Express API server and the pipeline import from here. Never duplicate.
 
-export interface EvidenceFile {
-  path: string
-  githubUrl: string
-  snippet?: string
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+export type FocusArea =
+  | 'infrastructure'
+  | 'database'
+  | 'auth'
+  | 'caching'
+  | 'structure'
+  | 'testing'
+  | 'communication'
+  | 'error_handling'
+
+export type ArchaeologyEvidenceType =
+  | 'commented_out'
+  | 'migration_artifact'
+  | 'dead_utility'
+  | 'dead_import'
+  | 'removed_test'
+  | 'todo_comment'
+
+export enum PipelineStage {
+  DETECTION = 'Decision detection',
+  CONTEXT = 'Context inference',
+  ARCHAEOLOGY = 'Alternatives archaeology',
+  GENERATION = 'ADR generation',
 }
 
-export interface ArchaeologyFinding {
-  type: "deleted-file" | "commented-code" | "migration" | "naming-pattern" | "todo-comment"
-  description: string
-  filePath?: string
-  snippet?: string
-}
-
-export interface ADR {
-  id: string                      // e.g. "ADR-004"
-  title: string
-  status: "accepted" | "deprecated" | "superseded"
-  category: string
-  confidence: number              // 0–1
-  context: string
-  decision: string
-  consequences: string
-  alternativesConsidered: string[]
-  evidenceFiles: EvidenceFile[]
-  archaeologyEvidence: ArchaeologyFinding[]
-  decisionDate?: string           // inferred from commit history (ISO date string)
-}
-
-export interface PipelineStats {
-  stage1DurationMs: number
-  stage2DurationMs: number
-  stage3DurationMs: number
-  stage4DurationMs: number
-  totalTokensUsed: number
-}
-
-export interface ADRPackage {
-  repoUrl: string
-  repoName: string
-  generatedAt: string             // ISO date string
-  adrs: ADR[]
-  pipelineStats: PipelineStats
-}
+// ─── Request/Response Types ─────────────────────────────────────────────────
 
 export interface AnalyzeRequest {
   repoUrl: string
   pathFilter?: string
-  focusAreas?: string[]
+  focusAreas?: FocusArea[]
 }
 
-export interface RepoContext {
-  chunks: string[]                // batched file content chunks for Bob
-  commitHistory: Record<string, string>  // filePath → earliest commit ISO date
-  fileList: string[]              // all included file paths
+export interface RepoValidation {
+  valid: boolean
+  fileCount?: number
+  language?: string
+  error?: string
+}
+
+// ─── ADR Types ──────────────────────────────────────────────────────────────
+
+export interface ADR {
+  id: string // e.g. "ADR-001"
+  filename: string // e.g. "0001-redis-sessions.md"
+  title: string
+  status: 'accepted' | 'deprecated' | 'superseded'
+  inferredDate: string // e.g. "~2019"
+  category: string
+  confidence: number // 0-100
+  context: string
+  decision: string
+  consequences: {
+    positive: string[]
+    negative: string[]
+  }
+  alternatives: Array<{
+    option: string
+    reason: string
+  }>
+  archaeology: Array<{
+    option: string
+    evidenceFile: string
+    evidenceType: ArchaeologyEvidenceType
+    rejectionReason: string
+  }> | null
+  evidenceFiles: string[]
+  markdownContent: string
+}
+
+export interface ADRPackage {
+  adrs: ADR[]
+  indexContent: string
+  repoName: string
   repoUrl: string
-  owner: string
-  repo: string
+  totalDecisions: number
+  archaeologyCount: number
+  totalTimeMs: number
 }
 
 // ─── SSE Event Types ────────────────────────────────────────────────────────
-
-export type StageStatus = "idle" | "running" | "done" | "error"
-
-export interface StageState {
-  stage: 1 | 2 | 3 | 4
-  status: StageStatus
-  count?: number                  // only on Stage 1 done
-}
+// The pipeline emits these via the onProgress callback; server.ts serializes
+// them to the SSE stream. Discriminated on `type`. This is the single contract
+// shared by lib/pipeline.ts, lib/demo/cache.ts, server.ts, and
+// scripts/test-server.ts — keep them in sync.
 
 export type SSEEvent =
-  | { event: "stage";    data: { stage: 1 | 2 | 3 | 4; status: "running" | "done"; count?: number } }
-  | { event: "complete"; data: ADRPackage }
-  | { event: "error";    data: { message: string; stage?: number } }
+  | { type: 'stage_start'; stage: number; name: string }
+  | { type: 'stage_complete'; stage: number; count: number; durationMs: number }
+  | { type: 'adr_ready'; adr: ADR }
+  | { type: 'pipeline_done'; package: ADRPackage }
+  | { type: 'error'; message: string }
 
-// ─── Stage-level internal types ─────────────────────────────────────────────
+// ─── Internal Pipeline Types ────────────────────────────────────────────────
 
-export interface Stage1Decision {
-  title: string
-  category: "database" | "auth" | "caching" | "infrastructure" | "patterns" | "api-design" | "other"
-  confidence: number
-  evidenceFiles: string[]
-  summary: string
+export interface RepoFile {
+  path: string
+  content: string
 }
 
-export interface Stage1Output {
-  decisions: Stage1Decision[]
-}
-
-export interface Stage2EnrichedDecision {
-  title: string
-  context: string
-  decision: string
-  rationale: string
-  alternativesConsidered: string[]
-  consequences: string
-  decisionDate?: string
-}
-
-export interface Stage2Output {
-  enrichedDecisions: Stage2EnrichedDecision[]
-}
-
-export interface Stage3Finding {
-  type: "deleted-file" | "commented-code" | "migration" | "naming-pattern" | "todo-comment"
-  description: string
-  filePath?: string
-  snippet?: string
-}
-
-export interface Stage3ArchaeologyEntry {
-  decisionTitle: string
-  findings: Stage3Finding[]
-}
-
-export interface Stage3Output {
-  archaeologyFindings: Stage3ArchaeologyEntry[]
-}
-
-export interface Stage4Output {
-  adrs: ADR[]
+export interface RepoContext {
+  owner: string
+  repo: string
+  files: RepoFile[]
+  fileCount: number
+  primaryLanguage: string
 }

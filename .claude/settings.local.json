@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(sed 's/\\(.*//')",
+      "Bash(echo \"---EXIT: $?---\")",
+      "Bash(echo \"---tsc exit: $?---\")",
+      "Bash(npm run *)",
+      "Bash(curl -s -m 5 http://localhost:3001/health)",
+      "Bash(echo \" <- exit $?\")"
+    ]
+  }
+}
