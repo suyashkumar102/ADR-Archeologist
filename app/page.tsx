@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { AnalyzeRequest } from '@/lib/types'
 import Button from '@/components/ui/Button'
+import Logo from '@/components/Logo'
 
 const FOCUS_AREAS = [
   'Infrastructure',
@@ -111,13 +112,7 @@ export default function Home() {
               className="flex items-center gap-3 text-left"
               aria-label="ADR-Archeologist home"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-cyan-300/30 bg-cyan-300/10 font-mono text-sm font-semibold text-cyan-200">
-                ADR
-              </span>
-              <span>
-                <span className="block text-sm font-semibold tracking-wide text-white">ADR-Archeologist</span>
-                <span className="block text-[11px] uppercase tracking-[0.24em] text-[var(--color-text3)]">Architecture intelligence</span>
-              </span>
+              <Logo size="md" animate />
             </button>
 
             <div className="hidden items-center gap-7 text-sm text-[var(--color-text2)] md:flex">

@@ -1,5 +1,6 @@
 'use client'
 
+import Logo from '@/components/Logo'
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
@@ -152,7 +153,7 @@ export default function ResultsView({ initialSample = false }: ResultsViewProps)
           <header className="mb-8 flex flex-col justify-between gap-5 border-b border-white/10 pb-6 lg:flex-row lg:items-end">
             <div>
               <button onClick={() => router.push('/')} className="mb-5 text-sm text-[var(--color-text2)] transition hover:text-white">
-                ADR-Archeologist
+                <Logo size="sm" />
               </button>
               <p className="text-xs uppercase tracking-[0.24em] text-cyan-200">Generated package</p>
               <h1 className="mt-3 text-4xl font-semibold tracking-normal text-white sm:text-5xl">
