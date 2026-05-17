@@ -258,7 +258,7 @@ export default function Home() {
               <h2 className="mt-3 text-3xl font-semibold text-white">From repository noise to ADR signal</h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-[var(--color-text2)]">
-              A clean three-stage story judges can understand quickly, with enough depth for engineering reviewers.
+              Three clear stages that take a repository from raw code to structured, reviewable architecture records.
             </p>
           </div>
 
@@ -355,8 +355,8 @@ export default function Home() {
           <div className="glass-panel rounded-xl p-6 sm:p-8">
             <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-cyan-200">Why it wins</p>
-                <h2 className="mt-3 text-3xl font-semibold text-white">A product story with real engineering gravity</h2>
+                <p className="text-xs uppercase tracking-[0.24em] text-cyan-200">Key benefits</p>
+                <h2 className="mt-3 text-3xl font-semibold text-white">Built for real engineering teams</h2>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 {WIN_POINTS.map((point) => (
