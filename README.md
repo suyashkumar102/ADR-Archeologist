@@ -1,133 +1,131 @@
 # ADR Archaeologist
 
-> Reconstruct undocumented architectural decisions from any codebase.
+> Recovers the architectural decisions your team never wrote down.
 
-ADR Archaeologist uses IBM Bob IDE and watsonx.ai to recover the reasoning behind major architectural choices — inferred from code patterns, dependencies, commit history, and repository structure — outputting a complete `/docs/adr/` directory of formal [MADR](https://adr.github.io/madr/)-format Architecture Decision Records.
+A Next.js web application that generates Architecture Decision Records (ADRs) by analyzing Git repositories using IBM Bob IDE, Groq AI, and full repository context.
 
----
+## Features
 
-## Architecture
+- 🏛️ **Archaeology Discovery**: Finds rejected alternatives in code comments and commit history
+- 🎯 **Smart Analysis**: 4-stage pipeline (Decision Detection → Context Inference → Alternatives Archaeology → ADR Generation)
+- ⚡ **Real-time Progress**: Server-Sent Events (SSE) for live pipeline updates
+- 📦 **Export Options**: Download as ZIP or create GitHub Pull Request
+- 🎨 **Beautiful UI**: Dark theme with Tailwind CSS and smooth animations
+- 🚀 **Instant Demo**: Try with django/django (no backend required)
 
-The product has two layers that work together:
+## Tech Stack
 
-### Layer 1 — Bob IDE integration
+- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS
+- **Backend**: Express.js, Groq AI (Llama 3.3 70B)
+- **Deployment**: Vercel (frontend) + Render (backend)
 
-Bob IDE is an IDE plugin that reads your repository in full context. ADR Archaeologist ships a custom Bob mode and skill that transforms Bob into an architectural analysis assistant.
+## Getting Started
 
-```text
-Open any repo in Bob IDE
-        ↓
-Type /adr generate
-        ↓
-Bob reads the full codebase
-        ↓
-Stage 1: Decision Detection
-Stage 2: Context Inference
-Stage 3: Alternative Discovery
-Stage 4: ADR Generation → writes docs/adr/*.md
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/adr-archaeologist.git
+cd adr-archaeologist
+
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
 ```
 
-See `bob-config/` for the mode, skill, and command configuration.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Layer 2 — Next.js web companion
+### Environment Variables
 
-The web companion accepts a GitHub URL, fetches the repository via the GitHub API, runs the same 4-stage pipeline using watsonx.ai Granite, and displays the results as interactive ADR cards.
+Create `.env.local`:
 
-> Bob IDE has no REST API and cannot be invoked directly from a web server.
-> The web companion uses watsonx.ai for server-side AI execution.
-
-```text
-User pastes GitHub URL
-        ↓
-POST /api/analyze (SSE stream)
-        ↓
-GitHub API → fetch full repo → batch into chunks
-        ↓
-watsonx.ai Granite → 4-stage pipeline
-        ↓
-ADR cards rendered live as SSE events arrive
-        ↓
-ZIP download + GitHub PR creation
+```env
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
 ```
 
----
+For production, set this to your Render backend URL.
 
-## What it does
+## Usage
 
-Every codebase contains undocumented decisions. Why Redis instead of database sessions? Why a monolith instead of microservices? Why this ORM, naming convention, or folder structure?
+### Try the Demo
 
-The 4-stage pipeline:
+1. Click "Try with django/django →" on the home page
+2. See pre-generated ADRs instantly (no backend required)
+3. Explore archaeology discoveries in the middleware ADR
 
-| Stage | Name | What the AI does |
-|---|---|---|
-| 1 | Decision Discovery | Reads the repository and identifies architectural decisions |
-| 2 | Enrichment | Infers rationale, alternatives considered, and consequences |
-| 3 | Repository Analysis | Scans for evidence of alternative implementations in deleted files, migrations, TODOs, and commit history |
-| 4 | MADR Formatting | Produces clean ADR records ready to commit |
+### Analyze Your Repository
 
----
+1. Paste a GitHub repository URL
+2. Optionally filter by subdirectory or focus areas
+3. Click "Generate ADRs"
+4. Watch the real-time pipeline progress
+5. Download results as ZIP or create a PR
 
-## Tech stack
+## Project Structure
 
-- IBM Bob IDE — custom mode + skill
-- watsonx.ai Granite (`ibm/granite-13b-instruct-v2`) — server-side AI processing
-- Next.js 14 (App Router, Node.js runtime API routes)
-- `@octokit/rest` — GitHub ingestion, commit history, PR creation
-- Zod — runtime validation for AI pipeline outputs
-- JSZip — ZIP generation
-- Tailwind CSS — styling
-- Vercel — deployment
-
----
-
-## Project structure
-
-```text
-adr-archaeologist/
-├── src/
-│   ├── app/
-│   │   ├── page.tsx
-│   │   ├── layout.tsx
-│   │   └── api/analyze/route.ts
-│   ├── components/
-│   │   ├── InputForm.tsx
-│   │   ├── PipelineProgress.tsx
-│   │   ├── ADRCard.tsx
-│   │   ├── RepositoryAnalysisPanel.tsx
-│   │   └── ExportPanel.tsx
-│   ├── lib/
-│   │   ├── watsonx/
-│   │   │   └── client.ts
-│   │   ├── bob/
-│   │   │   ├── pipeline.ts
-│   │   │   ├── stage1-discover.ts
-│   │   │   ├── stage2-enrich.ts
-│   │   │   ├── stage3-analysis.ts
-│   │   │   └── stage4-format.ts
-│   │   ├── github/
-│   │   │   ├── fetcher.ts
-│   │   │   └── pr.ts
-│   │   ├── export/
-│   │   │   ├── madr.ts
-│   │   │   └── zip.ts
-│   │   └── demo/
-│   │       ├── cache.ts
-│   │       └── django-adrs.json
-│   └── types.ts
-├── bob-config/
-│   ├── README.md
-│   ├── modes/adr-archaeologist.json
-│   ├── skills/adr-generate.md
-│   └── commands/adr.md
-├── bob_sessions/
-│   └── README.md
-├── AGENTS.md
-├── SPEC.md
-├── .env.local.example
-├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-├── next.config.js
-├── vercel.json
-└── LICENSE (MIT)
 ```
+├── app/                    # Next.js app directory
+│   ├── page.tsx           # Home page
+│   ├── results/           # Results page
+│   ├── layout.tsx         # Root layout
+│   └── globals.css        # Global styles
+├── components/            # React components
+│   ├── ui/               # Base UI components
+│   ├── ADRCard.tsx       # ADR display card
+│   ├── PipelineProgress.tsx
+│   └── DownloadButtons.tsx
+├── lib/                   # Core logic
+│   ├── api.ts            # Backend API client
+│   └── types/            # TypeScript types
+├── scripts/              # Utilities
+│   └── demo-fixture.ts   # Demo data
+└── .bob/                 # Bob IDE configuration
+    ├── modes/            # Custom mode
+    ├── skills/           # ADR generation skill
+    └── commands/         # /adr command
+```
+
+## Bob IDE Integration
+
+This project includes custom Bob IDE configuration:
+
+- **Mode**: `adr-archaeologist` - Specialized for ADR analysis
+- **Skill**: `adr-generate` - 4-stage ADR generation pipeline
+- **Command**: `/adr generate` - Generate ADRs for current repository
+
+## Deployment
+
+### Frontend (Vercel)
+
+1. Connect GitHub repository to Vercel
+2. Set environment variable: `NEXT_PUBLIC_BACKEND_URL`
+3. Deploy (automatic on push)
+
+### Backend (Render)
+
+See `ADR-Archeologist/` directory for backend deployment instructions.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with [IBM Bob IDE](https://www.ibm.com/products/watsonx-code-assistant)
+- Powered by [Groq](https://groq.com/) (Llama 3.3 70B)
+- Inspired by the [MADR](https://adr.github.io/madr/) format
+
+## Contributing
+
+Contributions welcome! Please open an issue or submit a pull request.
+
+---
+
+Made with ❤️ using IBM Bob IDE
