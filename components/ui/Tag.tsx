@@ -5,20 +5,18 @@ interface TagProps {
 
 export default function Tag({ label, variant = 'default' }: TagProps) {
   const styles: Record<string, string> = {
-    green: 'bg-[var(--color-green-bg)] text-[var(--color-green)]',
-    amber: 'bg-[var(--color-amber-dim)] text-[var(--color-amber)]',
-    purple: 'bg-[var(--color-purple-bg)] text-[var(--color-purple)]',
-    red: 'bg-[var(--color-red-bg)] text-[var(--color-red)]',
-    default: 'bg-[#1A1A1A] text-[var(--color-text2)]',
+    green: 'border-emerald-300/25 bg-emerald-300/10 text-emerald-200',
+    amber: 'border-amber-300/25 bg-amber-300/10 text-amber-100',
+    purple: 'border-indigo-300/25 bg-indigo-300/10 text-indigo-100',
+    red: 'border-red-300/25 bg-red-300/10 text-red-200',
+    default: 'border-white/10 bg-white/[0.05] text-[var(--color-text2)]',
   }
 
   return (
     <span
-      className={`inline-block px-2 py-1 rounded-full font-mono text-[10px] uppercase tracking-wider ${styles[variant]}`}
+      className={`inline-block rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider ${styles[variant]}`}
     >
       {label}
     </span>
   )
 }
-
-// Made with Bob

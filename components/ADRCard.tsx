@@ -13,10 +13,8 @@ interface ADRCardProps {
 export default function ADRCard({ adr, defaultExpanded = false }: ADRCardProps) {
   const [expanded, setExpanded] = useState(defaultExpanded)
   const [archaeologyPulse, setArchaeologyPulse] = useState(false)
-
   const adrNumber = `ADR-${adr.id.replace('adr-', '').padStart(3, '0')}`
 
-  // Pulse archaeology banner on mount if it exists
   useEffect(() => {
     if (adr.archaeology && adr.archaeology.length > 0) {
       setArchaeologyPulse(true)
@@ -26,81 +24,67 @@ export default function ADRCard({ adr, defaultExpanded = false }: ADRCardProps) 
   }, [adr.archaeology])
 
   return (
-    <div className="border border-[var(--color-border)] rounded-[10px] overflow-hidden mb-3 animate-fadeInUp">
-      {/* Header */}
+    <div className="animate-fadeInUp mb-4 overflow-hidden rounded-xl border border-white/10 bg-[#071022]/80 shadow-xl shadow-black/20">
       <div
         onClick={() => setExpanded(!expanded)}
-        className={`bg-[#0D0D0D] p-[14px_18px] cursor-pointer ${
-          expanded ? 'rounded-t-[10px]' : 'rounded-[10px]'
-        }`}
+        className="cursor-pointer bg-gradient-to-r from-white/[0.06] to-white/[0.02] p-5 transition hover:bg-white/[0.07]"
       >
-        {/* Row 1: Number and Badge */}
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-mono text-[11px] text-[var(--color-text3)]">{adrNumber}</span>
+        <div className="mb-3 flex items-center justify-between">
+          <span className="font-mono text-xs text-cyan-200">{adrNumber}</span>
           <Badge status={adr.status} />
         </div>
 
-        {/* Row 2: Title */}
-        <h3 className="text-base font-medium text-white my-[6px]">{adr.title}</h3>
+        <h3 className="my-2 text-xl font-semibold text-white">{adr.title}</h3>
 
-        {/* Row 3: Category, Confidence, Date, Chevron */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-wrap items-center gap-2">
             <Tag label={adr.category} variant="default" />
-            <span className="text-[11px] text-[var(--color-text3)] ml-2">
-              {adr.confidence}% confidence
-            </span>
-            <span className="text-[11px] text-[var(--color-text3)]">· {adr.inferredDate}</span>
+            <span className="text-xs text-[var(--color-text3)]">{adr.confidence}% confidence</span>
+            <span className="text-xs text-[var(--color-text3)]">- {adr.inferredDate}</span>
           </div>
-          <span className="text-[var(--color-text3)]">{expanded ? '▲' : '▼'}</span>
+          <span className="text-sm text-[var(--color-text3)]">{expanded ? 'Collapse' : 'Expand'}</span>
         </div>
       </div>
 
-      {/* Collapsed Preview */}
       {!expanded && (
-        <div className="bg-[var(--color-surface)] rounded-b-[10px] p-[10px_18px]">
-          <p className="text-xs text-[var(--color-text3)] italic">
+        <div className="bg-[#071022] px-5 py-4">
+          <p className="text-xs italic text-[var(--color-text3)]">
             {adr.context.substring(0, 100)}...
           </p>
         </div>
       )}
 
-      {/* Expanded Content */}
       {expanded && (
-        <div className="bg-[var(--color-surface)] border-t border-[var(--color-border)] rounded-b-[10px] p-6">
-          {/* Three Column Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Column 1: Context */}
+        <div className="border-t border-white/10 bg-[#071022] p-6">
+          <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
             <div>
-              <div className="text-[10px] font-medium tracking-wider uppercase text-[var(--color-text3)] mb-2">
-                CONTEXT
+              <div className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text3)]">
+                Context
               </div>
-              <p className="text-[13px] text-[var(--color-text2)] leading-relaxed">{adr.context}</p>
+              <p className="text-[13px] leading-relaxed text-[var(--color-text2)]">{adr.context}</p>
             </div>
 
-            {/* Column 2: Decision */}
             <div>
-              <div className="text-[10px] font-medium tracking-wider uppercase text-[var(--color-text3)] mb-2">
-                DECISION
+              <div className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text3)]">
+                Decision
               </div>
-              <p className="text-[13px] text-[var(--color-text2)] leading-relaxed">{adr.decision}</p>
+              <p className="text-[13px] leading-relaxed text-[var(--color-text2)]">{adr.decision}</p>
             </div>
 
-            {/* Column 3: Consequences */}
             <div>
-              <div className="text-[10px] font-medium tracking-wider uppercase text-[var(--color-text3)] mb-2">
-                CONSEQUENCES
+              <div className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text3)]">
+                Consequences
               </div>
               <div className="space-y-2">
                 {adr.consequences.positive.map((item, idx) => (
-                  <p key={`pos-${idx}`} className="text-[13px] text-[var(--color-text2)] leading-relaxed">
-                    <span className="text-[var(--color-green)]">✓ </span>
+                  <p key={`pos-${idx}`} className="text-[13px] leading-relaxed text-[var(--color-text2)]">
+                    <span className="text-[var(--color-green)]">+ </span>
                     {item}
                   </p>
                 ))}
                 {adr.consequences.negative.map((item, idx) => (
-                  <p key={`neg-${idx}`} className="text-[13px] text-[var(--color-text2)] leading-relaxed">
-                    <span className="text-[var(--color-red)]">× </span>
+                  <p key={`neg-${idx}`} className="text-[13px] leading-relaxed text-[var(--color-text2)]">
+                    <span className="text-[var(--color-red)]">- </span>
                     {item}
                   </p>
                 ))}
@@ -108,40 +92,36 @@ export default function ADRCard({ adr, defaultExpanded = false }: ADRCardProps) 
             </div>
           </div>
 
-          {/* Alternatives Section */}
           {adr.alternatives.length > 0 && (
-            <div className="border-t border-[var(--color-border)] pt-6 mb-6">
-              <div className="text-[10px] font-medium tracking-wider uppercase text-[var(--color-text3)] mb-3">
-                ALTERNATIVES CONSIDERED
+            <div className="mb-6 border-t border-white/10 pt-6">
+              <div className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text3)]">
+                Alternatives considered
               </div>
               <div className="space-y-2">
                 {adr.alternatives.map((alt, idx) => (
                   <p key={idx} className="text-xs text-[var(--color-text2)]">
-                    — {alt.option}: {alt.reason}
+                    {alt.option}: {alt.reason}
                   </p>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Archaeology Section - THE STAR OF THE SHOW */}
           {adr.archaeology && adr.archaeology.length > 0 && (
-            <div className={`bg-[var(--color-purple-bg)] border border-[var(--color-purple)] rounded-lg p-[12px_16px] my-4 ${archaeologyPulse ? 'archaeology-pulse' : ''}`}>
-              <div className="text-[var(--color-purple)] text-[13px] font-semibold mb-2">
-                🏛️ Rejected alternative discovered
+            <div className={`my-4 rounded-lg border border-indigo-300/25 bg-indigo-300/10 p-4 ${archaeologyPulse ? 'archaeology-pulse' : ''}`}>
+              <div className="mb-2 text-[13px] font-semibold text-indigo-100">
+                Rejected alternative discovered
               </div>
               {adr.archaeology.map((item, idx) => (
                 <div key={idx} className="mt-3 first:mt-0">
-                  <div className="text-[13px] font-medium text-[var(--color-purple)] mb-1">
-                    {item.option}
-                  </div>
-                  <div className="inline-block bg-[#0D0D0D] font-mono text-[11px] px-[7px] py-[2px] rounded my-1">
+                  <div className="mb-1 text-[13px] font-medium text-indigo-100">{item.option}</div>
+                  <div className="my-1 inline-block rounded bg-[#050814] px-2 py-1 font-mono text-[11px]">
                     {item.evidenceFile}
                   </div>
-                  <div className="inline-block ml-2">
+                  <div className="ml-2 inline-block">
                     <Tag label={item.evidenceType} variant="purple" />
                   </div>
-                  <p className="text-xs text-[var(--color-text2)] italic mt-1">
+                  <p className="mt-1 text-xs italic text-[var(--color-text2)]">
                     {item.rejectionReason}
                   </p>
                 </div>
@@ -149,16 +129,15 @@ export default function ADRCard({ adr, defaultExpanded = false }: ADRCardProps) 
             </div>
           )}
 
-          {/* Evidence Trail */}
-          <div className="border-t border-[var(--color-border)] pt-6">
-            <div className="text-[10px] font-medium tracking-wider uppercase text-[var(--color-text3)] mb-3">
-              EVIDENCE TRAIL
+          <div className="border-t border-white/10 pt-6">
+            <div className="mb-3 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text3)]">
+              Evidence trail
             </div>
             <div className="flex flex-wrap gap-2">
               {adr.evidenceFiles.map((file, idx) => (
                 <span
                   key={idx}
-                  className="inline-block bg-[#0D0D0D] border border-[var(--color-border)] rounded px-[9px] py-[3px] font-mono text-[10px] text-[var(--color-text3)]"
+                  className="inline-block rounded border border-white/10 bg-[#050814] px-2 py-1 font-mono text-[10px] text-[var(--color-text3)]"
                 >
                   {file}
                 </span>
@@ -182,7 +161,6 @@ export default function ADRCard({ adr, defaultExpanded = false }: ADRCardProps) 
         .animate-fadeInUp {
           animation: fadeInUp 0.3s ease;
         }
-        
         @keyframes archaeologyPulse {
           0% { transform: scale(1); }
           50% { transform: scale(1.02); }
@@ -191,7 +169,6 @@ export default function ADRCard({ adr, defaultExpanded = false }: ADRCardProps) 
         .archaeology-pulse {
           animation: archaeologyPulse 0.4s ease;
         }
-        
         @media (prefers-reduced-motion: reduce) {
           .animate-fadeInUp,
           .archaeology-pulse {
@@ -202,5 +179,3 @@ export default function ADRCard({ adr, defaultExpanded = false }: ADRCardProps) 
     </div>
   )
 }
-
-// Made with Bob

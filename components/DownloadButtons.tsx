@@ -21,16 +21,11 @@ export default function DownloadButtons({ pkg }: DownloadButtonsProps) {
     setZipLoading(true)
     try {
       const zip = new JSZip()
-      
-      // Add each ADR file
       pkg.adrs.forEach((adr) => {
         zip.file(`docs/adr/${adr.filename}`, adr.markdownContent)
       })
-      
-      // Add README/index
       zip.file('docs/adr/README.md', pkg.indexContent)
-      
-      // Generate and download
+
       const blob = await zip.generateAsync({ type: 'blob' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -47,14 +42,14 @@ export default function DownloadButtons({ pkg }: DownloadButtonsProps) {
 
   const handleCreatePR = async () => {
     if (!prToken.trim()) return
-    
+
     setPrLoading(true)
     try {
       const result = await api.createPR(prToken, pkg.repoUrl, pkg.adrs)
       setPrResult(result)
       if (result.prUrl) {
         setPrModalOpen(false)
-        setPrToken('') // Clear token after success
+        setPrToken('')
       }
     } catch (error) {
       setPrResult({ error: 'Failed to create PR. Please check your token and try again.' })
@@ -65,8 +60,7 @@ export default function DownloadButtons({ pkg }: DownloadButtonsProps) {
 
   return (
     <div>
-      {/* Buttons Row */}
-      <div className="flex gap-3 mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row">
         <Button onClick={handleDownloadZip} variant="secondary" loading={zipLoading}>
           Download ZIP
         </Button>
@@ -75,56 +69,54 @@ export default function DownloadButtons({ pkg }: DownloadButtonsProps) {
         </Button>
       </div>
 
-      {/* PR Modal */}
       {prModalOpen && (
-        <div className="min-h-[400px] bg-black/80 flex items-center justify-center rounded-[10px] p-8">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[10px] p-6 max-w-[400px] w-full">
-            <h3 className="text-lg font-medium mb-3">Create GitHub Pull Request</h3>
-            
-            <p className="text-[var(--color-text3)] text-xs mb-4">
+        <div className="flex min-h-[400px] items-center justify-center rounded-xl bg-black/50 p-4 sm:p-8">
+          <div className="glass-panel w-full max-w-[440px] rounded-xl p-6">
+            <h3 className="mb-3 text-lg font-medium">Create GitHub Pull Request</h3>
+
+            <p className="mb-4 text-xs text-[var(--color-text3)]">
               Your token is used only to create this PR and is never stored on our servers.
             </p>
-            
+
             <a
               href="https://github.com/settings/tokens"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] text-[var(--color-green)] hover:underline block mb-3"
+              className="mb-3 block text-[11px] text-cyan-200 hover:underline"
             >
               Create a token at github.com/settings/tokens (needs repo scope)
             </a>
-            
+
             <input
               type="password"
               value={prToken}
               onChange={(e) => setPrToken(e.target.value)}
               placeholder="ghp_your_token_here"
-              className="w-full bg-[#0D0D0D] border border-[var(--color-border)] rounded-lg px-4 py-3 text-sm my-3 focus:outline-none focus:border-[var(--color-green)]"
+              className="my-3 w-full rounded-lg border border-white/10 bg-[#050814] px-4 py-3 text-sm outline-none transition focus:border-cyan-300/60"
             />
-            
-            {/* Modal Result Display */}
+
             {prResult && prModalOpen && (
               <div className="mb-4">
                 {prResult.prUrl ? (
-                  <div className="bg-[var(--color-green-bg)] border border-[var(--color-green)] rounded-lg p-3">
+                  <div className="rounded-lg border border-emerald-300/25 bg-emerald-300/10 p-3">
                     <a
                       href={prResult.prUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[var(--color-green)] text-sm hover:underline"
+                      className="text-sm text-emerald-200 hover:underline"
                     >
-                      PR created! View on GitHub →
+                      PR created. View on GitHub
                     </a>
                   </div>
                 ) : (
-                  <div className="bg-[var(--color-red-bg)] border border-[var(--color-red)] rounded-lg p-3">
-                    <p className="text-[var(--color-red)] text-sm">{prResult.error}</p>
+                  <div className="rounded-lg border border-red-300/25 bg-red-300/10 p-3">
+                    <p className="text-sm text-red-200">{prResult.error}</p>
                   </div>
                 )}
               </div>
             )}
-            
-            <div className="flex gap-3">
+
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Button onClick={() => setPrModalOpen(false)} variant="ghost">
                 Cancel
               </Button>
@@ -141,23 +133,22 @@ export default function DownloadButtons({ pkg }: DownloadButtonsProps) {
         </div>
       )}
 
-      {/* Post-Modal Result Banner */}
       {prResult && !prModalOpen && (
         <div className="mt-4">
           {prResult.prUrl ? (
-            <div className="bg-[var(--color-green-bg)] border border-[var(--color-green)] rounded-lg p-3">
+            <div className="rounded-lg border border-emerald-300/25 bg-emerald-300/10 p-3">
               <a
                 href={prResult.prUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--color-green)] text-sm hover:underline"
+                className="text-sm text-emerald-200 hover:underline"
               >
-                ✓ PR created! View on GitHub →
+                PR created. View on GitHub
               </a>
             </div>
           ) : (
-            <div className="bg-[var(--color-red-bg)] border border-[var(--color-red)] rounded-lg p-3">
-              <p className="text-[var(--color-red)] text-sm">{prResult.error}</p>
+            <div className="rounded-lg border border-red-300/25 bg-red-300/10 p-3">
+              <p className="text-sm text-red-200">{prResult.error}</p>
             </div>
           )}
         </div>
@@ -165,5 +156,3 @@ export default function DownloadButtons({ pkg }: DownloadButtonsProps) {
     </div>
   )
 }
-
-// Made with Bob

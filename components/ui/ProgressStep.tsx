@@ -10,15 +10,13 @@ export default function ProgressStep({ stage, name, status, durationMs, count }:
   const renderIcon = () => {
     switch (status) {
       case 'waiting':
-        return <div className="w-[6px] h-[6px] rounded-full bg-[#505050]" />
+        return <div className="h-2 w-2 rounded-full bg-slate-600" />
       case 'running':
-        return (
-          <div className="w-4 h-4 border-2 border-transparent border-t-[var(--color-green)] rounded-full animate-spin" />
-        )
+        return <div className="h-4 w-4 animate-spin rounded-full border-2 border-transparent border-t-cyan-200" />
       case 'complete':
-        return <span className="text-[var(--color-green)] text-sm font-bold">✓</span>
+        return <span className="text-sm font-bold text-emerald-300">OK</span>
       case 'error':
-        return <span className="text-[var(--color-red)] text-sm font-bold">×</span>
+        return <span className="text-sm font-bold text-red-300">!</span>
     }
   }
 
@@ -29,9 +27,9 @@ export default function ProgressStep({ stage, name, status, durationMs, count }:
       case 'running':
         return 'text-white'
       case 'complete':
-        return 'text-[var(--color-green)]'
+        return 'text-emerald-200'
       case 'error':
-        return 'text-[var(--color-red)]'
+        return 'text-red-200'
     }
   }
 
@@ -40,7 +38,7 @@ export default function ProgressStep({ stage, name, status, durationMs, count }:
       const parts = []
       if (count !== undefined) parts.push(`${count} found`)
       if (durationMs !== undefined) parts.push(`${durationMs}ms`)
-      return <span className="text-[var(--color-text3)] text-sm">({parts.join(' · ')})</span>
+      return <span className="text-sm text-[var(--color-text3)]">({parts.join(' / ')})</span>
     }
     if (status === 'running') {
       return <span className="text-[var(--color-text3)]">...</span>
@@ -49,14 +47,11 @@ export default function ProgressStep({ stage, name, status, durationMs, count }:
   }
 
   return (
-    <div className="flex items-center gap-3 py-[10px]">
-      {renderIcon()}
-      <span className={`text-sm ${getTextColor()}`}>
-        {name}
-      </span>
+    <div className="flex items-center gap-3 border-b border-white/5 py-3 last:border-b-0">
+      <span className="font-mono text-xs text-[var(--color-text3)]">0{stage}</span>
+      <span className="flex h-5 w-5 items-center justify-center">{renderIcon()}</span>
+      <span className={`text-sm ${getTextColor()}`}>{name}</span>
       {renderDetails()}
     </div>
   )
 }
-
-// Made with Bob

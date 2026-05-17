@@ -34,24 +34,19 @@ export default function PipelineProgress({ request, onComplete, onError }: Pipel
   useEffect(() => {
     const url = api.analyzeStreamUrl(request)
     const es = new EventSource(url)
-
-    // Set timeout warning after 25 seconds
     const timeoutTimer = setTimeout(() => {
       setShowTimeoutWarning(true)
     }, 25000)
 
     es.onmessage = (e) => {
-      // Clear timeout warning on any event
       setShowTimeoutWarning(false)
       clearTimeout(timeoutTimer)
-      
+
       const event: SSEEvent = JSON.parse(e.data)
 
       if (event.type === 'stage_start') {
         setStages((prev) =>
-          prev.map((s) =>
-            s.stage === event.stage ? { ...s, status: 'running' } : s
-          )
+          prev.map((s) => s.stage === event.stage ? { ...s, status: 'running' } : s)
         )
       }
 
@@ -75,11 +70,7 @@ export default function PipelineProgress({ request, onComplete, onError }: Pipel
 
       if (event.type === 'error') {
         setErrorMessage(event.message)
-        setStages((prev) =>
-          prev.map((s) =>
-            s.status === 'running' ? { ...s, status: 'error' } : s
-          )
-        )
+        setStages((prev) => prev.map((s) => s.status === 'running' ? { ...s, status: 'error' } : s))
         es.close()
         onError(event.message)
       }
@@ -88,11 +79,7 @@ export default function PipelineProgress({ request, onComplete, onError }: Pipel
     es.onerror = () => {
       const message = 'Connection to backend lost. Is the server running?'
       setErrorMessage(message)
-      setStages((prev) =>
-        prev.map((s) =>
-          s.status === 'running' ? { ...s, status: 'error' } : s
-        )
-      )
+      setStages((prev) => prev.map((s) => s.status === 'running' ? { ...s, status: 'error' } : s))
       es.close()
       onError(message)
     }
@@ -104,10 +91,13 @@ export default function PipelineProgress({ request, onComplete, onError }: Pipel
   }, [request, onComplete, onError])
 
   return (
-    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[10px] p-6">
-      <h2 className="text-base font-medium mb-5">Analysing repository...</h2>
+    <div className="glass-panel rounded-xl p-6">
+      <div className="mb-6">
+        <p className="text-xs uppercase tracking-[0.24em] text-cyan-200">Pipeline running</p>
+        <h2 className="mt-2 text-2xl font-semibold text-white">Analyzing repository</h2>
+      </div>
 
-      <div className="space-y-0">
+      <div>
         {stages.slice(0, 3).map((stage) => (
           <ProgressStep
             key={stage.stage}
@@ -119,16 +109,14 @@ export default function PipelineProgress({ request, onComplete, onError }: Pipel
           />
         ))}
 
-        {/* Archaeology Banner */}
         {archaeologyCount > 0 && (
-          <div className="bg-[var(--color-purple-bg)] border border-[var(--color-purple)] rounded-lg px-4 py-[10px] my-3">
-            <p className="text-[var(--color-purple)] text-[13px] font-medium">
-              🏛️ Found {archaeologyCount} archaeology {archaeologyCount === 1 ? 'discovery' : 'discoveries'}
+          <div className="my-3 rounded-lg border border-indigo-300/25 bg-indigo-300/10 px-4 py-3">
+            <p className="text-[13px] font-medium text-indigo-100">
+              Found {archaeologyCount} archaeology {archaeologyCount === 1 ? 'discovery' : 'discoveries'}
             </p>
           </div>
         )}
 
-        {/* Stage 4 */}
         <ProgressStep
           stage={stages[3].stage}
           name={stages[3].name}
@@ -138,26 +126,22 @@ export default function PipelineProgress({ request, onComplete, onError }: Pipel
         />
       </div>
 
-      {/* Timeout Warning */}
       {showTimeoutWarning && !errorMessage && (
-        <div className="mt-4 bg-[var(--color-amber-dim)] border border-[var(--color-amber)] rounded-lg p-3">
-          <p className="text-[var(--color-amber)] text-xs">
-            Taking longer than expected — large repositories may need a few minutes.
+        <div className="mt-4 rounded-lg border border-amber-300/25 bg-amber-300/10 p-3">
+          <p className="text-xs text-amber-100">
+            Taking longer than expected. Large repositories may need a few minutes.
           </p>
         </div>
       )}
 
-      {/* Error State */}
       {errorMessage && (
-        <div className="mt-6 bg-[var(--color-red-bg)] border border-[var(--color-red-dim)] rounded-lg p-4">
-          <p className="text-[var(--color-red)] text-sm mb-3">{errorMessage}</p>
+        <div className="mt-6 rounded-lg border border-red-300/25 bg-red-300/10 p-4">
+          <p className="mb-3 text-sm text-red-200">{errorMessage}</p>
           <Button onClick={() => window.history.back()} variant="secondary">
-            ← Try again
+            Try again
           </Button>
         </div>
       )}
     </div>
   )
 }
-
-// Made with Bob

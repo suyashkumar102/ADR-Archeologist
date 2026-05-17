@@ -20,12 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <title>ADR Archaeologist</title>
-        <meta name="description" content="Recovers the architectural decisions your team never wrote down." />
+        <title>ADR-Archeologist | Architecture Intelligence</title>
+        <meta name="description" content="Turn codebases into architecture decisions with repository-aware analysis." />
       </head>
       <body>{children}</body>
     </html>
   )
 }
 
-// Made with Bob

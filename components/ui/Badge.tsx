@@ -4,30 +4,16 @@ interface BadgeProps {
 
 export default function Badge({ status }: BadgeProps) {
   const config = {
-    accepted: {
-      icon: '✅',
-      className: 'bg-[var(--color-green-bg)] text-[var(--color-green)]',
-    },
-    deprecated: {
-      icon: '🚫',
-      className: 'bg-[var(--color-red-bg)] text-[var(--color-red)]',
-    },
-    superseded: {
-      icon: '↩️',
-      className: 'bg-[var(--color-amber-dim)] text-[var(--color-amber)]',
-    },
+    accepted: 'border-emerald-300/25 bg-emerald-300/10 text-emerald-200',
+    deprecated: 'border-red-300/25 bg-red-300/10 text-red-200',
+    superseded: 'border-amber-300/25 bg-amber-300/10 text-amber-100',
   }
-
-  const { icon, className } = config[status]
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-[10px] py-[2px] rounded-[20px] text-[11px] font-medium ${className}`}
+      className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium capitalize ${config[status]}`}
     >
-      <span>{icon}</span>
-      <span className="capitalize">{status}</span>
+      {status}
     </span>
   )
 }
-
-// Made with Bob

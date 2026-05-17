@@ -8,18 +8,17 @@ interface CardProps {
 
 export default function Card({ children, className = '', variant = 'default' }: CardProps) {
   const borderColors = {
-    default: 'border-[var(--color-border)]',
-    green: 'border-[var(--color-green-dim)]',
-    amber: 'border-[var(--color-amber-dim)]',
+    default: 'border-white/10',
+    green: 'border-emerald-300/25',
+    amber: 'border-amber-300/25',
   }
 
   return (
     <div
-      className={`bg-[var(--color-surface)] border ${borderColors[variant]} rounded-[10px] p-4 px-5 ${className}`}
+      className={`glass-panel rounded-xl border p-5 ${borderColors[variant]} ${className}`}
     >
       {children}
     </div>
   )
 }
 
-// Made with Bob
