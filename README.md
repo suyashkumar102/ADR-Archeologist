@@ -11,6 +11,19 @@ commented-out implementations, dead utilities, and abandoned migrations. This
 project analyzes those signals and produces a reviewable, versioned record of
 why a system is built the way it is.
 
+## Design Methodology and Core Contrast
+
+When building an architectural recovery system, distinct implementation paths emerge. ADR Archaeologist optimizes for deterministic production workflows through deliberate design decisions:
+
+### 1. Static Structural Forensics vs. Git History Analysis
+Many tools attempt to map codebase evolution by parsing Git logs, diff histories, or old commit messages. In real-world engineering teams, commit histories are frequently compromised by squashed merges, refactoring noise, and uninformative commit messages (e.g., "wip" or "fix bug"). ADR Archaeologist treats the current structural state of the codebase as the ultimate source of truth. By parsing physical "code scars"—such as multi-line commented-out legacy blocks, unreferenced imports, dead utility functions, and migration-related TODO hooks—it reconstructs architectural intent from the code that survived, rather than vulnerable historical text narratives.
+
+### 2. Linear Deterministic Pipelines vs. Multi-Agent Frameworks
+Multi-agent architectures that rely on conversational debate between various AI personas introduce significant latency, non-deterministic outputs, and extreme token consumption. ADR Archaeologist utilizes a strict, linear four-stage execution pipeline. This ensures predictable runtime performance, verifiable structural validation at each layer, and a total execution time of under 90 seconds for major codebases.
+
+### 3. Integrated Repository Assets vs. External Analytics Dashboards
+Instead of decoupling analysis into an external third-party dashboard or generating static PDF summaries that exist outside the developer's workspace, ADR Archaeologist compiles standard Markdown assets directly into the repository's native file system structure under `/docs/adr/`. This allows development teams to instantly review, version-control, and merge architectural records through standard code review workflows and GitHub pull requests.
+
 ## Overview
 
 The tool runs a four-stage analysis pipeline:
