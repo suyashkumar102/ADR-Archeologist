@@ -1,6 +1,6 @@
 import { AnalyzeRequest, ADR } from './types/index'
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+const BACKEND = (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://adr-archeologist.onrender.com').replace(/\/$/, '')
 
 export const api = {
 
