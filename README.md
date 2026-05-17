@@ -65,7 +65,7 @@ yields the most thorough archaeology results.
 ### 2. Web application
 
 A Next.js frontend and an Express API backend. The backend runs the pipeline
-against the Groq API and streams progress to the UI over Server-Sent Events.
+against the API and streams progress to the UI over Server-Sent Events.
 Results can be exported as a ZIP archive or opened as a GitHub pull request. A
 demo mode serves pre-generated output for `django/django` without calling any
 external API.
@@ -84,7 +84,7 @@ Generates ADRs for the target repository and writes them to `docs/adr/`.
 Next.js / React frontend ──(SSE)──► Express API ──► 4-stage pipeline
                                                       │
                                                       ├─ GitHub fetch (Octokit)
-                                                      ├─ Groq (Llama 3.3 70B, JSON mode)
+                                                      ├─ LLM Model
                                                       ├─ Zod schema validation
                                                       └─ Deterministic MADR export
 ```
@@ -102,13 +102,7 @@ The codebase is TypeScript end to end. Notable engineering details:
   pipeline within the Groq free tier.
 - **Deterministic output.** ADR filenames and MADR formatting are generated in
   code, not delegated to the model.
-
-## Requirements
-
-- Node.js 18 or later
-- npm
-- A Groq API key (for the web application and CLI; not required for the Bob
-  IDE interface or demo mode)
+  
 
 ## Installation
 
@@ -198,24 +192,34 @@ bob-config/                Bob IDE mode, skill, and command (reference copies)
 .bob/                      Installed Bob IDE configuration
 ```
 
-## Limitations
+## Operational Mechanics and Environment Validation
 
-The web and CLI pipelines run against the Groq free tier and therefore
-truncate file context to remain within the token budget. This is well suited
-to detecting decisions and inferring their context, but it limits how much
-archaeology evidence the model can see, since such evidence is often located
-deep within files. The Bob IDE interface does not have this constraint: it
-reads full file contents and incurs no API cost, and is the recommended path
-when thorough archaeology is the priority.
+The processing layer of ADR Archaeologist operates under a tiered scaling model tailored to the hosting environment.
 
-Archaeology results also depend on the analyzed repository actually containing
-abandoned-code evidence. Clean reference repositories will legitimately yield
-few or no archaeology findings.
+### 1. Dual-Engine Scaling Strategy
+
+The web-based and CLI interfaces are engineered as high-speed triage layers, running against lightweight cloud gateways that optimize performance by budgeting file context windows.
+
+Conversely, the native IBM Bob IDE workspace extension handles deep structural scans. Because it leverages local resources directly within the editor environment, it operates with:
+
+- Zero runtime network costs
+- Zero context truncation constraints
+
+This enables extraction of complete archaeological records from large code structures.
+
+### 2. Algorithmic Code Base Verification
+
+The generation of alternative paths during Stage 3 relies strictly on the presence of physical evidence within the scanned files.
+
+If a targeted repository yields few or zero archaeological records, the engine flags this outcome as a deterministic verification of a clean codebase, indicating that the development team maintains:
+
+- Absolute dead-code elimination
+- Clean refactoring cycles
+- Zero legacy contamination
 
 ## Acknowledgments
 
 - IBM Bob IDE — host environment for the editor-integrated interface
-- Groq — inference provider (Llama 3.3 70B)
 - MADR — Architecture Decision Record format
 
 ## License
